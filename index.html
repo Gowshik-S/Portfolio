@@ -14,7 +14,7 @@
   />
   <meta name="robots" content="index, follow" />
 
-  <!-- Canonical (CHANGE THIS TO YOUR LIVE URL) -->
+  <!-- Canonical -->
   <link rel="canonical" href="https://gowshik.online/" />
 
   <!-- Open Graph / Facebook / LinkedIn -->
@@ -25,7 +25,6 @@
     content="Explore projects by Gowshik S — B.Tech AI & DS student, aspiring AI & full-stack developer from Puducherry. Working on Ocean Sentinels (SIH), ORBIS, Beta HR, and more."
   />
   <meta property="og:url" content="https://gowshik.online/" />
-  <!-- Optional preview image – update to your actual image URL -->
   <meta property="og:image" content="https://gowshik.online/assets/gowshik-banner.png" />
 
   <!-- Twitter Card -->
@@ -46,11 +45,12 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
     rel="stylesheet"
   />
+
+  <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/g-favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/g-favicon.png">
   <link rel="apple-touch-icon" href="assets/g-favicon.png">
   <link rel="shortcut icon" type="image/png" href="assets/g-favicon.png">
-
 
   <!-- Structured Data (Schema.org Person) -->
   <script type="application/ld+json">
@@ -254,6 +254,50 @@
       background: rgba(15, 23, 42, 0.85);
       font-size: 1.25rem;
       cursor: pointer;
+    }
+
+    /* Share dropdown */
+    .share-wrapper {
+      position: relative;
+    }
+
+    .share-menu {
+      position: absolute;
+      right: 0;
+      top: 110%;
+      min-width: 150px;
+      padding: 0.35rem 0;
+      border-radius: 0.8rem;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.98);
+      box-shadow: 0 14px 35px rgba(15, 23, 42, 0.9);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 140ms ease-out, transform 140ms ease-out;
+      z-index: 50;
+    }
+
+    .share-menu.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .share-menu button {
+      width: 100%;
+      padding: 0.4rem 0.9rem;
+      border: none;
+      background: transparent;
+      color: var(--text-soft);
+      font-size: 0.8rem;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .share-menu button:hover {
+      background: rgba(30, 64, 175, 0.5);
+      color: var(--text);
     }
 
     /* ====== HERO ====== */
@@ -532,6 +576,8 @@
     /* ====== SECTION BASE ====== */
     section {
       padding-block: 2.8rem;
+      /* Fix: prevent headings from being hidden behind sticky navbar */
+      scroll-margin-top: calc(var(--nav-height) + 12px);
     }
 
     .section-header {
@@ -975,6 +1021,17 @@
           <a href="#contact" class="btn btn-primary">
             <span>Hire me</span> <span>↗</span>
           </a>
+
+          <!-- Share dropdown -->
+          <div class="share-wrapper">
+            <button class="btn" id="shareBtn" type="button">
+              Share ▼
+            </button>
+            <div class="share-menu" id="shareMenu" aria-label="Share menu">
+              <button type="button" data-share="whatsapp">WhatsApp</button>
+              <button type="button" data-share="copy">Copy link</button>
+            </div>
+          </div>
         </div>
 
         <button class="nav-menu-btn" id="navMenuBtn" aria-label="Toggle navigation">
@@ -1445,6 +1502,7 @@
       initHeroBars();
       initProgressBars();
       initScrollSpy();
+      initShare();
     });
 
     // ====== NAV ======
@@ -1461,6 +1519,70 @@
         link.addEventListener("click", () => {
           navLinks.classList.remove("open");
         });
+      });
+    }
+
+    // ====== SHARE (WhatsApp + Copy Link) ======
+    function initShare() {
+      const shareBtn = document.getElementById("shareBtn");
+      const shareMenu = document.getElementById("shareMenu");
+
+      if (!shareBtn || !shareMenu) return;
+
+      const shareUrl = "https://gowshik.online/";
+      const shareText = "Hey! Check out Gowshik's AI & Full-Stack Developer portfolio:\n" + shareUrl;
+
+      // Toggle dropdown
+      shareBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        shareMenu.classList.toggle("open");
+      });
+
+      // Close when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!shareMenu.contains(e.target) && e.target !== shareBtn) {
+          shareMenu.classList.remove("open");
+        }
+      });
+
+      // Handle menu clicks
+      shareMenu.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+
+        const type = btn.dataset.share;
+
+        if (type === "whatsapp") {
+          const encoded = encodeURIComponent(shareText);
+          const waUrl = `https://wa.me/?text=${encoded}`;
+          window.open(waUrl, "_blank");
+        } else if (type === "copy") {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareText)
+              .then(() => {
+                alert("Link copied to clipboard!");
+              })
+              .catch(() => {
+                alert("Copy failed. You can manually share: " + shareUrl);
+              });
+          } else {
+            // Fallback
+            const textarea = document.createElement("textarea");
+            textarea.value = shareText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+              document.execCommand("copy");
+              alert("Link copied to clipboard!");
+            } catch {
+              alert("Copy failed. You can manually share: " + shareUrl);
+            }
+            document.body.removeChild(textarea);
+          }
+        }
+
+        // Close menu after action
+        shareMenu.classList.remove("open");
       });
     }
 
@@ -1520,7 +1642,10 @@
             if (entry.isIntersecting) {
               const id = entry.target.id;
               navLinks.forEach((link) => {
-                link.classList.toggle("active", link.getAttribute("href") === "#" + id);
+                link.classList.toggle(
+                  "active",
+                  link.getAttribute("href") === "#" + id
+                );
               });
             }
           });
