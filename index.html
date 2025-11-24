@@ -2,12 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Gowshik S | Portfolio</title>
+  <title>Gowshik S | AI & Full-Stack Developer Portfolio</title>
+
+  <!-- Viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary SEO -->
   <meta
     name="description"
-    content="Portfolio of Gowshik S - B.Tech Artificial Intelligence & Data Science, Developer & Learner."
+    content="Portfolio of Gowshik S, B.Tech Artificial Intelligence & Data Science student from Puducherry. Aspiring AI & full-stack developer working on machine learning, web development, and real-world problem solving."
   />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Canonical (CHANGE THIS TO YOUR LIVE URL) -->
+  <link rel="canonical" href="https://your-portfolio-domain.com/" />
+
+  <!-- Open Graph / Facebook / LinkedIn -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Gowshik S | AI & Full-Stack Developer Portfolio" />
+  <meta
+    property="og:description"
+    content="Explore projects by Gowshik S — B.Tech AI & DS student, aspiring AI & full-stack developer from Puducherry. Working on Ocean Sentinels (SIH), ORBIS, Beta HR, and more."
+  />
+  <meta property="og:url" content="https://your-portfolio-domain.com/" />
+  <!-- Optional preview image – update to your actual image URL -->
+  <meta property="og:image" content="https://your-portfolio-domain.com/og-image.jpg" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Gowshik S | AI & Full-Stack Developer Portfolio" />
+  <meta
+    name="twitter:description"
+    content="AI & full-stack developer in progress. Check out projects like Ocean Sentinels (SIH), ORBIS, Beta HR, and more."
+  />
+  <meta name="twitter:image" content="https://your-portfolio-domain.com/og-image.jpg" />
+
+  <!-- Author -->
+  <meta name="author" content="Gowshik S" />
 
   <!-- ====== FONTS ====== -->
   <link rel="preconnect" href="https://fonts.gstatic.com" />
@@ -15,6 +46,32 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
     rel="stylesheet"
   />
+
+  <!-- Structured Data (Schema.org Person) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Gowshik S",
+    "jobTitle": "Aspiring AI & Full-Stack Developer",
+    "description": "B.Tech Artificial Intelligence & Data Science student from Puducherry, India. Interested in AI/ML, backend development, and modern web.",
+    "url": "https://your-portfolio-domain.com/",
+    "email": "mailto:gowshik@vortexinfinite.xyz",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Puducherry",
+      "addressCountry": "IN"
+    },
+    "alumniOf": {
+      "@type": "CollegeOrUniversity",
+      "name": "Sri Manakula Vinayagar Engineering College"
+    },
+    "sameAs": [
+      "https://github.com/Gowshik-S",
+      "https://www.linkedin.com/in/gowshiks/"
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -901,7 +958,7 @@
           <span>GOWSHIK&nbsp;S</span>
         </div>
 
-        <nav class="nav-links" id="navLinks">
+        <nav class="nav-links" id="navLinks" aria-label="Primary navigation">
           <a href="#home" class="active">Home</a>
           <a href="#about">About</a>
           <a href="#skills">Skills</a>
@@ -924,14 +981,14 @@
     <!-- ====== MAIN ====== -->
     <main>
       <!-- ====== HERO ====== -->
-      <section id="home" class="hero">
+      <section id="home" class="hero" aria-labelledby="home-heading">
         <div class="container hero-grid">
           <div>
             <div class="hero-eyebrow">
               <span class="hero-eyebrow-pill">Portfolio</span>
               <span>AI &amp; Web Development</span>
             </div>
-            <h1 class="hero-title">
+            <h1 class="hero-title" id="home-heading">
               Hi, I'm <span>Gowshik&nbsp;S</span> —<br />
               aspiring AI &amp; full-stack developer.
             </h1>
@@ -942,19 +999,21 @@
             </p>
 
             <div class="hero-badges">
-              <span class="badge">Puducherry, India</span>
-              <span class="badge">B.Tech AI &amp; DS</span>
-              <span class="badge" href = "vortexinfinite.xyz">Lead of Vortex Infinite</span>
+              <span class="badge">📍 Puducherry, India</span>
+              <span class="badge">🎓 B.Tech AI &amp; DS</span>
+              <a class="badge" href="https://www.vortexinfinite.xyz/" target="_blank" rel="noopener noreferrer">
+                Lead of Vortex Infinite
+              </a>
             </div>
 
             <div class="hero-actions">
               <a href="#projects" class="btn btn-primary">
                 View my work <span>↓</span>
               </a>
-              <a href="https://www.vortexinfinite.xyz/" class="btn">
+              <a href="https://www.vortexinfinite.xyz/" class="btn" target="_blank" rel="noopener noreferrer">
                 Vortex Infinite
               </a>
-              <a href="\resume.pdf" class="btn">
+              <a href="/resume.pdf" class="btn">
                 Download CV
               </a>
             </div>
@@ -964,7 +1023,7 @@
           </div>
 
           <div class="hero-right">
-            <div class="hero-card">
+            <div class="hero-card" aria-label="Learning snapshot">
               <div class="hero-card-header">
                 <p class="hero-card-title">Snapshot</p>
                 <span class="hero-card-status">
@@ -989,7 +1048,7 @@
                   </div>
                 </div>
 
-                <div class="hero-chart">
+                <div class="hero-chart" aria-hidden="true">
                   <div class="hero-chart-label">
                     <span>Learning progress</span>
                     <span class="hero-chart-pill">2025 roadmap</span>
@@ -1020,11 +1079,11 @@
       </section>
 
       <!-- ====== ABOUT ====== -->
-      <section id="about">
+      <section id="about" aria-labelledby="about-heading">
         <div class="container">
           <div class="section-header">
             <div>
-              <h2 class="section-title">01 · <span>About</span></h2>
+              <h2 class="section-title" id="about-heading">01 · <span>About</span></h2>
             </div>
             <p class="section-subtitle">
               Quick overview of who I am, what I study, and how I like to work on
@@ -1119,11 +1178,11 @@
       </section>
 
       <!-- ====== SKILLS ====== -->
-      <section id="skills">
+      <section id="skills" aria-labelledby="skills-heading">
         <div class="container">
           <div class="section-header">
             <div>
-              <h2 class="section-title">02 · <span>Skills</span></h2>
+              <h2 class="section-title" id="skills-heading">02 · <span>Skills</span></h2>
             </div>
             <p class="section-subtitle">
               A snapshot of the tools and technologies I’m comfortable with, and those
@@ -1163,15 +1222,15 @@
       </section>
 
       <!-- ====== PROJECTS ====== -->
-      <section id="projects">
+      <section id="projects" aria-labelledby="projects-heading">
         <div class="container">
           <div class="section-header">
             <div>
-              <h2 class="section-title">03 · <span>Projects</span></h2>
+              <h2 class="section-title" id="projects-heading">03 · <span>Projects</span></h2>
             </div>
             <p class="section-subtitle">
               A few highlights of the kind of work I’ve done — from hackathons to
-              college projects. (More projects will be added soon.)
+              college projects.
             </p>
           </div>
 
@@ -1203,13 +1262,13 @@
               </div>
               <div class="project-tags">
                 <span class="project-tag">Flutter (Mobile)</span>
-                <span class="project-tag">PWA (Web)</span>
+                <span class="project-tag">Progressive Web App</span>
                 <span class="project-tag">FastAPI</span>
                 <span class="project-tag">PostgreSQL</span>
                 <span class="project-tag">NLP</span>
                 <span class="project-tag">Mesh Networking</span>
               </div>
-              <a href="https://sih.vortexinfinite.xyz/pages/index.html" target="_blank" rel="noreferrer" class="project-link">
+              <a href="https://sih.vortexinfinite.xyz/pages/index.html" target="_blank" rel="noopener noreferrer" class="project-link">
                 View live <span>↗</span>
               </a>
             </article>
@@ -1228,11 +1287,8 @@
               <div class="project-tags">
                 <span class="project-tag">Python</span>
                 <span class="project-tag">APIs</span>
-                <span class="project-tag">ML</span>
+                <span class="project-tag">Machine Learning</span>
               </div>
-              <!--<a href="#" class="project-link">
-                View details <span>↗</span>
-              </a>-->
             </article>
 
             <article class="project-card">
@@ -1251,9 +1307,6 @@
                 <span class="project-tag">UI/UX</span>
                 <span class="project-tag">Django (planned)</span>
               </div>
-              <!--<a href="#" class="project-link">
-                View details <span>↗</span>
-              </a>  -->
             </article>
 
             <article class="project-card">
@@ -1272,20 +1325,17 @@
                 <span class="project-tag">Signal Processing</span>
                 <span class="project-tag">Prototyping</span>
               </div>
-             <!-- <a href="#" class="project-link">
-                View details <span>↗</span>
-              </a> -->
             </article>
           </div>
         </div>
       </section>
 
       <!-- ====== CONTACT ====== -->
-      <section id="contact">
+      <section id="contact" aria-labelledby="contact-heading">
         <div class="container">
           <div class="section-header">
             <div>
-              <h2 class="section-title">04 · <span>Contact</span></h2>
+              <h2 class="section-title" id="contact-heading">04 · <span>Contact</span></h2>
             </div>
             <p class="section-subtitle">
               Feel free to reach out for internships, collaboration, or just to say hi.
@@ -1343,7 +1393,6 @@
                   Send
                 </button>
               </div>
-
             </form>
 
             <aside class="contact-details">
@@ -1361,10 +1410,10 @@
               </p>
 
               <div class="contact-social">
-                <a href="https://github.com/Gowshik-S" target="_blank" rel="noreferrer">GitHub</a>
-                <a href="https://www.linkedin.com/in/gowshiks/" target="_blank" rel="noreferrer">LinkedIn</a>
-                <a href="https://www.hackerrank.com/profile/gowshik1" target="_blank" rel="noreferrer">LeetCode / HackerRank</a>
-                <a href="\resume.pdf" rel="noreferrer">Resume (PDF)</a>
+                <a href="https://github.com/Gowshik-S" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://www.linkedin.com/in/gowshiks/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                <a href="https://www.hackerrank.com/profile/gowshik1" target="_blank" rel="noopener noreferrer">HackerRank</a>
+                <a href="/resume.pdf" rel="noreferrer">Resume (PDF)</a>
               </div>
             </aside>
           </div>
