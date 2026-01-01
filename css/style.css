@@ -35,24 +35,24 @@
   --bg-card: #1a1a1a;
   --bg-elevated: #222222;
   --bg-glass: rgba(26, 26, 26, 0.8);
-  
+
   /* Accent Colors - Neutral */
   --accent-primary: #ffffff;
   --accent-secondary: #e0e0e0;
   --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%);
   --accent-glow: rgba(255, 255, 255, 0.15);
-  
+
   /* Warm Accent */
   --warm-primary: #ffffff;
   --warm-secondary: #e0e0e0;
   --warm-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-  
+
   /* Text Colors */
   --text-primary: #ffffff;
   --text-secondary: #b2b2b2;
   --text-muted: #666666;
   --text-accent: #ffffff;
-  
+
   /* Borders & Effects */
   --border-color: rgba(255, 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.2);
@@ -61,18 +61,18 @@
   --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 60px rgba(255, 255, 255, 0.1);
-  
+
   /* Layout */
   --nav-height: 72px;
   --container-max: 1280px;
   --section-gap: 120px;
-  
+
   /* Transitions */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --transition-fast: 0.2s var(--ease-out);
   --transition-normal: 0.4s var(--ease-out);
   --transition-slow: 0.6s var(--ease-out);
-  
+
   /* Border Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -88,15 +88,15 @@
   --bg-card: #ffffff;
   --bg-elevated: #f5f7ff;
   --bg-glass: rgba(255, 255, 255, 0.9);
-  
+
   --text-primary: #1a1a2e;
   --text-secondary: #4a4a6a;
   --text-muted: #8888a0;
   --text-accent: #1a1a2e;
-  
+
   --accent-primary: #1a1a2e;
   --accent-secondary: #4a4a6a;
-  
+
   --border-color: rgba(0, 0, 0, 0.08);
   --border-hover: rgba(0, 0, 0, 0.15);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -105,7 +105,9 @@
 }
 
 /* ====== RESET & BASE ====== */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -158,9 +160,19 @@ body {
 }
 
 @keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -30px) scale(1.05); }
-  66% { transform: translate(-20px, 20px) scale(0.95); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
 }
 
 a {
@@ -186,7 +198,10 @@ button {
   font-family: 'CerebriSans', 'Inter', sans-serif;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: 'CerebriSans', 'Inter', sans-serif;
   font-weight: 700;
   line-height: 1.2;
@@ -336,9 +351,17 @@ h1, h2, h3, h4 {
   height: 20px;
 }
 
-.theme-toggle .sun-icon { display: none; }
-[data-theme="light"] .theme-toggle .moon-icon { display: none; }
-[data-theme="light"] .theme-toggle .sun-icon { display: block; }
+.theme-toggle .sun-icon {
+  display: none;
+}
+
+[data-theme="light"] .theme-toggle .moon-icon {
+  display: none;
+}
+
+[data-theme="light"] .theme-toggle .sun-icon {
+  display: block;
+}
 
 /* Mobile Menu */
 .nav-menu-btn {
@@ -401,8 +424,17 @@ h1, h2, h3, h4 {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 210, 106, 0.4); }
-  50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(0, 210, 106, 0); }
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(0, 210, 106, 0.4);
+  }
+
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 0 8px rgba(0, 210, 106, 0);
+  }
 }
 
 /* Hero Title */
@@ -432,8 +464,17 @@ h1, h2, h3, h4 {
 }
 
 @keyframes sparkle {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-  50% { transform: scale(1.2) rotate(10deg); opacity: 0.8; }
+
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2) rotate(10deg);
+    opacity: 0.8;
+  }
 }
 
 .hero-role {
@@ -638,8 +679,15 @@ h1, h2, h3, h4 {
 }
 
 @keyframes floatBadge {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 /* ====== SECTIONS BASE ====== */
@@ -757,9 +805,17 @@ h1, h2, h3, h4 {
   background: var(--border-color);
 }
 
-.browser-dots span:nth-child(1) { background: #ff5f57; }
-.browser-dots span:nth-child(2) { background: #ffbd2e; }
-.browser-dots span:nth-child(3) { background: #28ca42; }
+.browser-dots span:nth-child(1) {
+  background: #ff5f57;
+}
+
+.browser-dots span:nth-child(2) {
+  background: #ffbd2e;
+}
+
+.browser-dots span:nth-child(3) {
+  background: #28ca42;
+}
 
 .browser-url {
   flex: 1;
@@ -1196,28 +1252,39 @@ h1, h2, h3, h4 {
     grid-template-columns: 1fr;
     gap: 48px;
   }
-  
+
   .hero-visual {
     max-width: 480px;
     margin: 0 auto;
   }
-  
+
   .project-item.featured {
     grid-template-columns: 1fr;
   }
-  
+
   .project-item.featured:nth-child(even) .project-preview {
     order: 0;
   }
-  
+
+  .project-preview {
+    min-height: 280px;
+  }
+
+  .project-image {
+    object-fit: contain;
+    object-position: center center;
+    height: auto;
+    min-height: 100%;
+  }
+
   .contact-wrapper {
     grid-template-columns: 1fr;
   }
-  
+
   .contact-info {
     padding-right: 0;
   }
-  
+
   .skills-wrapper {
     grid-template-columns: 1fr;
   }
@@ -1228,7 +1295,7 @@ h1, h2, h3, h4 {
     --section-gap: 80px;
     --nav-height: 64px;
   }
-  
+
   .nav-links {
     display: none;
     position: fixed;
@@ -1240,36 +1307,36 @@ h1, h2, h3, h4 {
     padding: 16px;
     flex-direction: column;
   }
-  
+
   .nav-links.active {
     display: flex;
   }
-  
+
   .nav-links a {
     padding: 16px;
     border-radius: var(--radius-md);
   }
-  
+
   .nav-menu-btn {
     display: flex;
   }
-  
+
   .hero-title {
     font-size: 2.2rem;
   }
-  
+
   .hero-actions {
     flex-direction: column;
   }
-  
+
   .btn {
     width: 100%;
   }
-  
+
   .projects-small-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .footer .container {
     flex-direction: column;
     gap: 16px;
@@ -1282,13 +1349,13 @@ h1, h2, h3, h4 {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .stat-item {
     padding: 12px;
     background: var(--bg-elevated);
     border-radius: var(--radius-md);
   }
-  
+
   .floating-badge {
     display: none;
   }
