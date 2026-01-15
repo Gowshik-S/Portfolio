@@ -20,12 +20,15 @@ db = SQLAlchemy(app)
 class UptimeRecord(db.Model):
     """Stores persistent uptime data that survives server restarts"""
     id = db.Column(db.Integer, primary_key=True)
-    total_uptime_seconds = db.Column(db.Float, default=0.0)
+    # accumulated_uptime stores the sum of all PREVIOUS sessions (not including current)
+    accumulated_uptime_seconds = db.Column(db.Float, default=0.0)
+    # last_session_uptime stores the uptime we last recorded for the current/previous session
+    last_session_uptime = db.Column(db.Float, default=0.0)
     last_boot_time = db.Column(db.Float)  # Unix timestamp
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     
     def __repr__(self):
-        return f'<UptimeRecord {self.id}: {self.total_uptime_seconds}s>'
+        return f'<UptimeRecord {self.id}: accumulated={self.accumulated_uptime_seconds}s>'
 
 
 # ====== UPTIME MANAGEMENT ======
@@ -44,7 +47,8 @@ def get_or_create_uptime_record():
     record = UptimeRecord.query.first()
     if not record:
         record = UptimeRecord(
-            total_uptime_seconds=0.0,
+            accumulated_uptime_seconds=0.0,
+            last_session_uptime=0.0,
             last_boot_time=get_current_boot_time()
         )
         db.session.add(record)
@@ -52,55 +56,56 @@ def get_or_create_uptime_record():
     return record
 
 
-def calculate_persistent_uptime():
+def handle_boot_detection():
     """
-    Calculate the total persistent uptime.
-    
-    This handles server restarts by:
-    1. Checking if the current boot time differs from the stored boot time
-    2. If different (server restarted): add the previous session's uptime
-    3. Return total = stored_uptime + current_session_uptime
+    Check if a reboot occurred and update accumulated uptime accordingly.
+    This should be called at startup.
     """
     record = get_or_create_uptime_record()
     current_boot_time = get_current_boot_time()
-    current_session_uptime = get_system_uptime_since_boot()
     
     # Check if server was restarted (boot time changed)
     if record.last_boot_time and abs(record.last_boot_time - current_boot_time) > 60:
-        # Server was restarted - the difference was already saved before shutdown
-        # Just update the boot time reference
+        # Server was restarted!
+        # Add the last saved session uptime to accumulated total
+        record.accumulated_uptime_seconds += record.last_session_uptime
+        record.last_session_uptime = 0.0  # Reset for new session
         record.last_boot_time = current_boot_time
+        record.last_updated = datetime.utcnow()
         db.session.commit()
+        print(f"New boot detected. Accumulated uptime updated to: {record.accumulated_uptime_seconds}s")
     
-    # Total uptime = accumulated uptime + current session uptime
-    total_uptime = record.total_uptime_seconds + current_session_uptime
+    return record
+
+
+def calculate_persistent_uptime():
+    """
+    Calculate the total persistent uptime.
+    Total = accumulated from previous sessions + current session uptime
+    """
+    record = get_or_create_uptime_record()
+    current_session_uptime = get_system_uptime_since_boot()
+    
+    # Total uptime = accumulated (all previous sessions) + current session
+    total_uptime = record.accumulated_uptime_seconds + current_session_uptime
     
     return total_uptime
 
 
-def save_current_uptime():
+def save_current_session_uptime():
     """
-    Save the current uptime to the database.
-    This should be called periodically to persist the uptime.
+    Save the current session uptime to the database.
+    This should be called periodically to ensure we don't lose data on unexpected shutdown.
+    The last_session_uptime is added to accumulated when a reboot is detected.
     """
     record = get_or_create_uptime_record()
-    current_boot_time = get_current_boot_time()
+    current_session_uptime = get_system_uptime_since_boot()
     
-    # Check if this is a new boot session
-    if record.last_boot_time and abs(record.last_boot_time - current_boot_time) > 60:
-        # New boot session - we need to save the previous accumulated time
-        # The previous session's uptime should have been saved before shutdown
-        record.last_boot_time = current_boot_time
-    
-    # Update the total uptime (accumulated + current session)
-    record.total_uptime_seconds = calculate_persistent_uptime() - get_system_uptime_since_boot() + get_system_uptime_since_boot()
+    # Update the last session uptime (will be added to accumulated on next reboot)
+    record.last_session_uptime = current_session_uptime
     record.last_updated = datetime.utcnow()
-    
-    # Actually, let's simplify: just store the BASE uptime (without current session)
-    # So total = base + current_session at any time
-    record.total_uptime_seconds = record.total_uptime_seconds  # Keep previous accumulated
-    
     db.session.commit()
+    
     return record
 
 
@@ -127,15 +132,13 @@ def get_server_stats():
         current_uptime = get_system_uptime_since_boot()
         total_uptime = calculate_persistent_uptime()
         
-        # Get the record to calculate downtime
+        # Save the current session uptime periodically (on each API call)
+        save_current_session_uptime()
+        
+        # Get the record for any additional info
         record = get_or_create_uptime_record()
-        # Downtime = time since first record - total uptime
-        # For simplicity, we'll show 0 if we can't calculate it
+        # Downtime is tracked separately via the downtime tracker service
         downtime = 0.0
-        if record.last_updated:
-            # Estimate based on accumulated vs expected
-            # This is a simplified calculation
-            downtime = max(0, record.total_uptime_seconds - total_uptime + current_uptime)
         
         # Build response
         response = {
@@ -175,45 +178,69 @@ def save_uptime():
     Can be called before server shutdown via a systemd hook.
     """
     try:
-        record = get_or_create_uptime_record()
-        current_session = get_system_uptime_since_boot()
-        
-        # Save current accumulated uptime + current session
-        record.total_uptime_seconds += current_session
-        record.last_boot_time = get_current_boot_time()
-        record.last_updated = datetime.utcnow()
-        db.session.commit()
+        record = save_current_session_uptime()
+        total_uptime = calculate_persistent_uptime()
         
         return jsonify({
             'status': 'saved',
-            'total_uptime': record.total_uptime_seconds
+            'current_session_uptime': record.last_session_uptime,
+            'accumulated_uptime': record.accumulated_uptime_seconds,
+            'total_uptime': total_uptime
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ====== DATABASE MIGRATION ======
+def migrate_database():
+    """
+    Handle migration from old schema to new schema.
+    Old schema had: total_uptime_seconds
+    New schema has: accumulated_uptime_seconds, last_session_uptime
+    """
+    with app.app_context():
+        try:
+            # Check if we need to migrate by checking for old column
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            columns = [col['name'] for col in inspector.get_columns('uptime_record')]
+            
+            if 'total_uptime_seconds' in columns and 'accumulated_uptime_seconds' not in columns:
+                # Old schema detected - need to migrate
+                print("Migrating database from old schema to new schema...")
+                
+                # Add new columns
+                with db.engine.connect() as conn:
+                    conn.execute(text('ALTER TABLE uptime_record ADD COLUMN accumulated_uptime_seconds FLOAT DEFAULT 0.0'))
+                    conn.execute(text('ALTER TABLE uptime_record ADD COLUMN last_session_uptime FLOAT DEFAULT 0.0'))
+                    # Copy old total_uptime_seconds to accumulated_uptime_seconds
+                    conn.execute(text('UPDATE uptime_record SET accumulated_uptime_seconds = total_uptime_seconds'))
+                    conn.commit()
+                
+                print("Database migration completed!")
+            elif 'accumulated_uptime_seconds' not in columns:
+                # Fresh database, columns will be created by create_all()
+                pass
+        except Exception as e:
+            print(f"Migration check error (may be normal for new DB): {e}")
 
 
 # ====== INITIALIZATION ======
 def init_db():
     """Initialize the database and handle boot time changes"""
     with app.app_context():
+        # First, try to migrate if needed
+        migrate_database()
+        
+        # Create tables (will create new columns if missing)
         db.create_all()
         
-        record = get_or_create_uptime_record()
-        current_boot_time = get_current_boot_time()
+        # Handle boot detection - this will add previous session uptime to accumulated
+        # if a reboot is detected
+        handle_boot_detection()
         
-        # Check if this is a new boot session
-        if record.last_boot_time:
-            time_diff = abs(record.last_boot_time - current_boot_time)
-            if time_diff > 60:  # More than 1 minute difference = new boot
-                # Server was restarted, keep the accumulated uptime
-                # Just update the reference boot time
-                print(f"New boot detected. Previous accumulated uptime: {record.total_uptime_seconds}s")
-                record.last_boot_time = current_boot_time
-                db.session.commit()
-        else:
-            # First run ever
-            record.last_boot_time = current_boot_time
-            db.session.commit()
+        record = get_or_create_uptime_record()
+        print(f"Uptime tracker initialized. Accumulated: {record.accumulated_uptime_seconds}s, Last session: {record.last_session_uptime}s")
 
 
 # Initialize database on import
