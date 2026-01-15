@@ -49,12 +49,15 @@ def get_downtime_status():
 
 
 @app.route('/api/downtime/trigger-offline', methods=['POST'])
+@cross_origin()  # Allow anyone to trigger offline (server is down, can't POST itself)
 def trigger_offline():
     """
     Trigger when the main server goes offline.
-    Call this endpoint when you detect the server is down.
+    Anyone can call this, but it will only start tracking ONCE.
+    Once offline, it won't reset until trigger-online is called.
     """
     if not downtime_tracker['is_offline']:
+        # First time going offline - start tracking
         downtime_tracker['is_offline'] = True
         downtime_tracker['offline_since'] = datetime.now(timezone.utc).isoformat()
         
@@ -64,11 +67,13 @@ def trigger_offline():
             'offline_since': downtime_tracker['offline_since']
         })
     else:
+        # Already offline - don't reset the timer
         return jsonify({
             'status': 'already_offline',
-            'message': 'Server is already marked as offline',
+            'message': 'Server is already marked as offline. Downtime continues.',
             'offline_since': downtime_tracker['offline_since']
         })
+
 
 
 @app.route('/api/downtime/trigger-online', methods=['POST'])
