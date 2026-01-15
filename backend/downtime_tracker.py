@@ -13,7 +13,11 @@ app = Flask(__name__)
 downtime_tracker = {
     'is_offline': False,
     'offline_since': None,  # ISO timestamp when server went offline
-    'total_downtime_seconds': 0.0  # Accumulated downtime
+    'total_downtime_seconds': 0.0,  # Accumulated downtime
+    # Last outage information
+    'last_outage_start': None,  # ISO timestamp when last outage started
+    'last_outage_end': None,    # ISO timestamp when last outage ended
+    'last_outage_duration_seconds': 0.0  # Duration of last completed outage
 }
 
 
@@ -23,7 +27,15 @@ def get_downtime_status():
     """
     Get current downtime status.
     Returns the current downtime in seconds if offline, or 0 if online.
+    Also includes last outage information when server is online.
     """
+    # Build last outage info (available in both states)
+    last_outage_info = {
+        'last_outage_start': downtime_tracker['last_outage_start'],
+        'last_outage_end': downtime_tracker['last_outage_end'],
+        'last_outage_duration_seconds': downtime_tracker['last_outage_duration_seconds']
+    }
+    
     if downtime_tracker['is_offline'] and downtime_tracker['offline_since']:
         # Calculate current downtime
         offline_since = datetime.fromisoformat(downtime_tracker['offline_since'])
@@ -35,7 +47,8 @@ def get_downtime_status():
             'current_downtime_seconds': current_downtime,
             'total_downtime_seconds': total_downtime,
             'offline_since': downtime_tracker['offline_since'],
-            'timestamp': datetime.now(timezone.utc).isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            **last_outage_info
         })
     else:
         return jsonify({
@@ -43,7 +56,8 @@ def get_downtime_status():
             'current_downtime_seconds': 0,
             'total_downtime_seconds': downtime_tracker['total_downtime_seconds'],
             'offline_since': None,
-            'timestamp': datetime.now(timezone.utc).isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            **last_outage_info
         })
 
 
@@ -81,14 +95,21 @@ def trigger_online():
     """
     Trigger when the main server comes back online.
     Call this endpoint when you detect the server is back up.
+    Saves the outage details for later reference.
     """
     if downtime_tracker['is_offline'] and downtime_tracker['offline_since']:
         # Calculate the downtime for this outage
         offline_since = datetime.fromisoformat(downtime_tracker['offline_since'])
-        downtime_duration = (datetime.now(timezone.utc) - offline_since).total_seconds()
+        now = datetime.now(timezone.utc)
+        downtime_duration = (now - offline_since).total_seconds()
         
         # Add to total downtime
         downtime_tracker['total_downtime_seconds'] += downtime_duration
+        
+        # Save last outage information
+        downtime_tracker['last_outage_start'] = downtime_tracker['offline_since']
+        downtime_tracker['last_outage_end'] = now.isoformat()
+        downtime_tracker['last_outage_duration_seconds'] = downtime_duration
         
         # Reset offline status
         downtime_tracker['is_offline'] = False
@@ -100,7 +121,9 @@ def trigger_online():
             'message': 'Server is back online',
             'downtime_duration_seconds': downtime_duration,
             'total_downtime_seconds': downtime_tracker['total_downtime_seconds'],
-            'was_offline_since': previous_offline_since
+            'was_offline_since': previous_offline_since,
+            'last_outage_start': downtime_tracker['last_outage_start'],
+            'last_outage_end': downtime_tracker['last_outage_end']
         })
     else:
         return jsonify({
@@ -114,14 +137,19 @@ def reset_downtime():
     """
     Reset all downtime tracking.
     Use this to start fresh or for maintenance.
+    Clears both current and last outage information.
     """
     downtime_tracker['is_offline'] = False
     downtime_tracker['offline_since'] = None
     downtime_tracker['total_downtime_seconds'] = 0.0
+    # Also reset last outage info
+    downtime_tracker['last_outage_start'] = None
+    downtime_tracker['last_outage_end'] = None
+    downtime_tracker['last_outage_duration_seconds'] = 0.0
     
     return jsonify({
         'status': 'success',
-        'message': 'Downtime tracker has been reset'
+        'message': 'Downtime tracker has been reset (including last outage info)'
     })
 
 

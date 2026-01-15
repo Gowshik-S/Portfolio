@@ -312,6 +312,7 @@ function setServerOnlineStatus(isOnline) {
   const footerStatusText = footerStatus?.querySelector('.footer-status-text');
   if (footerStatus) {
     footerStatus.classList.toggle('offline', !isOnline);
+    footerStatus.classList.toggle('online', isOnline);
   }
   if (footerStatusText) {
     footerStatusText.textContent = isOnline ? 'All systems normal.' : 'Systems offline.';

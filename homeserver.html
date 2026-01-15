@@ -161,6 +161,10 @@
             text-align: center;
             position: relative;
             transition: all var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .stat-card:hover {
@@ -572,6 +576,10 @@
                                 <span class="uptime-label">Downtime:</span>
                                 <span class="uptime-value" id="dashDowntime">—</span>
                             </div>
+                            <div class="uptime-row">
+                                <span class="uptime-label">Last outage:</span>
+                                <span class="uptime-value" id="dashLastOutage">—</span>
+                            </div>
                         </div>
                     </div>
 
@@ -821,6 +829,10 @@
         let hasTriggeredOffline = false;
         let hasTriggeredOnline = false;
 
+        // Track server online state to prevent flickering
+        let serverIsOnline = null; // null = unknown, true = online, false = offline
+        let lastDowntimeValue = '—'; // Cache the last downtime value
+
         // ====== INITIALIZATION ======
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
@@ -1051,16 +1063,25 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const data = await response.json();
+
+                // Only update state if it changed from offline to online
+                if (serverIsOnline !== true) {
+                    serverIsOnline = true;
+                    setConnectionStatus(true);
+                    triggerDowntimeOnline();
+                }
+
                 updateDashboardUI(data);
                 updateCharts(data);
-                setConnectionStatus(true);
-                // Server is online, trigger online on the downtime tracker
-                triggerDowntimeOnline();
             } catch (error) {
                 console.warn('Failed to fetch stats:', error.message);
-                setConnectionStatus(false);
-                // Server is offline, trigger offline on the downtime tracker
-                triggerDowntimeOffline();
+
+                // Only update state if it changed from online to offline
+                if (serverIsOnline !== false) {
+                    serverIsOnline = false;
+                    setConnectionStatus(false);
+                    triggerDowntimeOffline();
+                }
             }
         }
 
@@ -1193,6 +1214,7 @@
             const footerStatusText = footerStatus?.querySelector('.footer-status-text');
             if (footerStatus) {
                 footerStatus.classList.toggle('offline', !isOnline);
+                footerStatus.classList.toggle('online', isOnline);
             }
             if (footerStatusText) {
                 footerStatusText.textContent = isOnline ? 'All systems normal.' : 'Systems offline.';
@@ -1255,14 +1277,52 @@
 
         function updateDowntimeUI(data) {
             const downtimeEl = document.getElementById('dashDowntime');
-            if (!downtimeEl) return;
+            const lastOutageEl = document.getElementById('dashLastOutage');
 
-            if (data.is_offline && data.current_downtime_seconds) {
-                // Server is offline, show current downtime
-                downtimeEl.textContent = formatDowntime(Math.floor(data.current_downtime_seconds));
-            } else {
-                // Server is online, show dash
-                downtimeEl.textContent = '—';
+            // Use local server state to prevent flickering
+            // Only show downtime when we know the server is offline locally
+            if (downtimeEl) {
+                if (serverIsOnline === true) {
+                    // Server is online, always show dash
+                    if (lastDowntimeValue !== '—') {
+                        lastDowntimeValue = '—';
+                        downtimeEl.textContent = '—';
+                    }
+                } else if (serverIsOnline === false && data.is_offline && data.current_downtime_seconds) {
+                    // Server is offline (confirmed by both local state and API), show current downtime
+                    const newValue = formatDowntime(Math.floor(data.current_downtime_seconds));
+                    lastDowntimeValue = newValue;
+                    downtimeEl.textContent = newValue;
+                } else if (serverIsOnline === null) {
+                    // Unknown state, trust the API
+                    if (data.is_offline && data.current_downtime_seconds) {
+                        const newValue = formatDowntime(Math.floor(data.current_downtime_seconds));
+                        lastDowntimeValue = newValue;
+                        downtimeEl.textContent = newValue;
+                    } else {
+                        lastDowntimeValue = '—';
+                        downtimeEl.textContent = '—';
+                    }
+                }
+            }
+
+            // Update last outage display
+            if (lastOutageEl) {
+                if (data.last_outage_duration_seconds && data.last_outage_duration_seconds > 0) {
+                    const duration = formatDowntime(Math.floor(data.last_outage_duration_seconds));
+                    // Calculate how long ago the outage ended
+                    if (data.last_outage_end) {
+                        const endTime = new Date(data.last_outage_end);
+                        const now = new Date();
+                        const agoSeconds = Math.floor((now - endTime) / 1000);
+                        const agoText = formatTimeAgo(agoSeconds);
+                        lastOutageEl.textContent = `${duration} (${agoText})`;
+                    } else {
+                        lastOutageEl.textContent = duration;
+                    }
+                } else {
+                    lastOutageEl.textContent = '—';
+                }
             }
         }
 
@@ -1270,6 +1330,21 @@
             const minutes = Math.floor(seconds / 60);
             const secs = seconds % 60;
             return `${minutes}m ${secs}s`;
+        }
+
+        function formatTimeAgo(seconds) {
+            if (seconds < 60) {
+                return 'just now';
+            } else if (seconds < 3600) {
+                const mins = Math.floor(seconds / 60);
+                return `${mins} min${mins > 1 ? 's' : ''} ago`;
+            } else if (seconds < 86400) {
+                const hrs = Math.floor(seconds / 3600);
+                return `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
+            } else {
+                const days = Math.floor(seconds / 86400);
+                return `${days} day${days > 1 ? 's' : ''} ago`;
+            }
         }
 
         // ====== AUTO-TRIGGER DOWNTIME TRACKER ======

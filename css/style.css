@@ -1016,12 +1016,13 @@ h4 {
 .server-card-icon {
   width: 56px;
   height: 56px;
-  background: var(--accent-gradient);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 20px;
 }
 
@@ -1184,12 +1185,13 @@ h4 {
 .skill-icon {
   width: 56px;
   height: 56px;
-  background: var(--accent-gradient);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 20px;
 }
 
@@ -1425,6 +1427,14 @@ h4 {
   border-radius: 50%;
   background: #3b82f6;
   animation: pulse 2s ease-in-out infinite;
+}
+
+.footer-status.online .footer-status-dot {
+  background: #00d26a;
+}
+
+.footer-status.online .footer-status-text {
+  color: #00d26a;
 }
 
 .footer-status.offline .footer-status-dot {
