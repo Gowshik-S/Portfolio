@@ -123,12 +123,26 @@ def get_server_stats():
         disk = psutil.disk_usage('/')
         disk_percent = disk.percent
         
-        # Get persistent uptime
-        uptime_seconds = calculate_persistent_uptime()
+        # Get uptime values
+        current_uptime = get_system_uptime_since_boot()
+        total_uptime = calculate_persistent_uptime()
+        
+        # Get the record to calculate downtime
+        record = get_or_create_uptime_record()
+        # Downtime = time since first record - total uptime
+        # For simplicity, we'll show 0 if we can't calculate it
+        downtime = 0.0
+        if record.last_updated:
+            # Estimate based on accumulated vs expected
+            # This is a simplified calculation
+            downtime = max(0, record.total_uptime_seconds - total_uptime + current_uptime)
         
         # Build response
         response = {
-            'uptime': uptime_seconds,
+            'uptime': total_uptime,  # For backward compatibility
+            'current_uptime': current_uptime,
+            'total_uptime': total_uptime,
+            'downtime': downtime,
             'cpu_percent': cpu_percent,
             'ram_percent': ram_percent,
             'disk_percent': disk_percent,
@@ -209,4 +223,4 @@ init_db()
 if __name__ == '__main__':
     # Run the Flask development server
     # In production, use gunicorn or similar
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=8487, debug=False)

@@ -60,6 +60,91 @@
             height: 18px;
         }
 
+        /* Status Banner at Top */
+        .top-status-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-full);
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+        }
+
+        .top-status-banner.online {
+            border-color: rgba(0, 210, 106, 0.3);
+        }
+
+        .top-status-banner.offline {
+            border-color: rgba(255, 95, 87, 0.3);
+        }
+
+        .top-status-banner .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .top-status-banner.online .status-dot {
+            background: #00d26a;
+        }
+
+        .top-status-banner.offline .status-dot {
+            background: #ff5f57;
+        }
+
+        .top-status-banner .status-text {
+            font-weight: 600;
+        }
+
+        .top-status-banner.online .status-text {
+            color: #00d26a;
+        }
+
+        .top-status-banner.offline .status-text {
+            color: #ff5f57;
+        }
+
+        .top-status-banner .status-time {
+            color: var(--text-muted);
+        }
+
+        /* Uptime Mini Block */
+        .uptime-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .uptime-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .uptime-row:last-child {
+            border-bottom: none;
+        }
+
+        .uptime-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .uptime-value {
+            font-family: 'CerebriSans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
         /* Stats Overview */
         .stats-overview {
             display: grid;
@@ -180,6 +265,15 @@
         .chart-card-badge .live-dot {
             width: 6px;
             height: 6px;
+        }
+
+        .chart-card-badge.offline {
+            background: rgba(255, 95, 87, 0.15);
+            color: #ff5f57;
+        }
+
+        .chart-card-badge.offline .live-dot {
+            background: #ff5f57;
         }
 
         .chart-container {
@@ -412,6 +506,7 @@
                     </svg>
                     Back to Portfolio
                 </a>
+
                 <h1 class="dashboard-title">Home Server <span class="gradient-text">Dashboard</span></h1>
                 <p class="dashboard-subtitle">
                     Real-time monitoring of my self-hosted Ubuntu server. All metrics are sanitized for privacy.
@@ -423,16 +518,29 @@
         <section class="section" style="padding-top: 0;">
             <div class="container">
                 <div class="stats-overview">
-                    <!-- Uptime -->
-                    <div class="stat-card primary">
+                    <!-- Uptime Mini Block -->
+                    <div class="stat-card">
                         <div class="stat-card-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <polyline points="12 6 12 12 16 14"></polyline>
                             </svg>
                         </div>
-                        <div class="stat-card-value" id="dashUptime">—</div>
-                        <div class="stat-card-label">Uptime</div>
+                        <div class="stat-card-label" style="margin-bottom: 12px;">Uptime Stats</div>
+                        <div class="uptime-block">
+                            <div class="uptime-row">
+                                <span class="uptime-label">Current uptime:</span>
+                                <span class="uptime-value" id="dashCurrentUptime">—</span>
+                            </div>
+                            <div class="uptime-row">
+                                <span class="uptime-label">Total uptime:</span>
+                                <span class="uptime-value" id="dashTotalUptime">—</span>
+                            </div>
+                            <div class="uptime-row">
+                                <span class="uptime-label">Downtime:</span>
+                                <span class="uptime-value" id="dashDowntime">—</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- CPU -->
@@ -491,7 +599,7 @@
                         <div class="chart-card">
                             <div class="chart-card-header">
                                 <h3 class="chart-card-title">CPU Usage Over Time</h3>
-                                <span class="chart-card-badge">
+                                <span class="chart-card-badge chart-badge">
                                     <span class="live-dot"></span>
                                     LIVE
                                 </span>
@@ -505,7 +613,7 @@
                         <div class="chart-card">
                             <div class="chart-card-header">
                                 <h3 class="chart-card-title">Memory Usage Over Time</h3>
-                                <span class="chart-card-badge">
+                                <span class="chart-card-badge chart-badge">
                                     <span class="live-dot"></span>
                                     LIVE
                                 </span>
@@ -519,7 +627,7 @@
                         <div class="chart-card">
                             <div class="chart-card-header">
                                 <h3 class="chart-card-title">Disk Usage</h3>
-                                <span class="chart-card-badge">
+                                <span class="chart-card-badge chart-badge">
                                     <span class="live-dot"></span>
                                     LIVE
                                 </span>
@@ -533,7 +641,7 @@
                         <div class="chart-card">
                             <div class="chart-card-header">
                                 <h3 class="chart-card-title">System Overview</h3>
-                                <span class="chart-card-badge">
+                                <span class="chart-card-badge chart-badge">
                                     <span class="live-dot"></span>
                                     LIVE
                                 </span>
@@ -550,13 +658,6 @@
                     <h2 class="section-title-small">Services Health</h2>
                     <div class="services-grid" id="servicesGrid">
                         <!-- Services will be populated by JS -->
-                        <div class="service-card">
-                            <div class="service-status online"></div>
-                            <div class="service-info">
-                                <div class="service-name">Nginx</div>
-                                <div class="service-desc">Web Server</div>
-                            </div>
-                        </div>
                         <div class="service-card">
                             <div class="service-status online"></div>
                             <div class="service-info">
@@ -622,11 +723,8 @@
                         <div class="info-card">
                             <h3 class="info-card-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <circle cx="12" cy="12" r="4"></circle>
-                                    <line x1="21.17" y1="8" x2="12" y2="8"></line>
-                                    <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
-                                    <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
+                                    <polyline points="4 17 10 11 4 5"></polyline>
+                                    <line x1="12" y1="19" x2="20" y2="19"></line>
                                 </svg>
                                 Software
                             </h3>
@@ -921,31 +1019,56 @@
         }
 
         function updateDashboardUI(data) {
-            // Update stat cards
-            const uptimeEl = document.getElementById('dashUptime');
-            if (uptimeEl && data.uptime !== undefined) {
-                uptimeEl.textContent = formatUptime(data.uptime);
+            // Update uptime mini block
+            const currentUptimeEl = document.getElementById('dashCurrentUptime');
+            if (currentUptimeEl && data.current_uptime !== undefined) {
+                currentUptimeEl.textContent = formatUptime(data.current_uptime);
+            } else if (currentUptimeEl && data.uptime !== undefined) {
+                // Fallback to uptime if current_uptime not available
+                currentUptimeEl.textContent = formatUptime(data.uptime);
             }
 
+            const totalUptimeEl = document.getElementById('dashTotalUptime');
+            if (totalUptimeEl && data.total_uptime !== undefined) {
+                totalUptimeEl.textContent = formatUptime(data.total_uptime);
+            } else if (totalUptimeEl && data.uptime !== undefined) {
+                totalUptimeEl.textContent = formatUptime(data.uptime);
+            }
+
+            const downtimeEl = document.getElementById('dashDowntime');
+            if (downtimeEl && data.downtime !== undefined) {
+                downtimeEl.textContent = formatUptime(data.downtime);
+            } else if (downtimeEl) {
+                downtimeEl.textContent = '—';
+            }
+
+            // Update CPU
             const cpuEl = document.getElementById('dashCpu');
             if (cpuEl && data.cpu_percent !== undefined) {
                 cpuEl.textContent = `${data.cpu_percent.toFixed(1)}%`;
             }
 
+            // Update RAM
             const ramEl = document.getElementById('dashRam');
             if (ramEl && data.ram_percent !== undefined) {
                 ramEl.textContent = `${data.ram_percent.toFixed(1)}%`;
             }
 
+            // Update Disk
             const diskEl = document.getElementById('dashDisk');
             if (diskEl && data.disk_percent !== undefined) {
                 diskEl.textContent = `${data.disk_percent.toFixed(1)}%`;
             }
 
-            // Update last update time
+            // Update last update times
+            const now = new Date().toLocaleTimeString();
             const lastUpdateEl = document.getElementById('lastUpdate');
             if (lastUpdateEl) {
-                lastUpdateEl.textContent = new Date().toLocaleTimeString();
+                lastUpdateEl.textContent = now;
+            }
+            const topLastUpdatedEl = document.getElementById('topLastUpdated');
+            if (topLastUpdatedEl) {
+                topLastUpdatedEl.textContent = now;
             }
         }
 
@@ -999,6 +1122,7 @@
         }
 
         function setConnectionStatus(isOnline) {
+            // Update bottom connection banner
             const banner = document.getElementById('connectionBanner');
             const statusText = document.getElementById('connectionStatus');
 
@@ -1011,6 +1135,23 @@
                 statusText.textContent = isOnline ? 'Connected' : 'Disconnected';
             }
 
+            // Update top status banner
+            const topBanner = document.getElementById('topStatusBanner');
+            if (topBanner) {
+                topBanner.classList.toggle('online', isOnline);
+                topBanner.classList.toggle('offline', !isOnline);
+            }
+
+            // Update chart badges
+            document.querySelectorAll('.chart-badge').forEach(badge => {
+                badge.classList.toggle('offline', !isOnline);
+                if (isOnline) {
+                    badge.innerHTML = '<span class="live-dot"></span> LIVE';
+                } else {
+                    badge.innerHTML = '<span class="live-dot"></span> OFFLINE';
+                }
+            });
+
             // Update service status for Stats API
             const servicesGrid = document.getElementById('servicesGrid');
             const statsApiCard = servicesGrid?.querySelector('.service-card:last-child .service-status');
@@ -1020,10 +1161,17 @@
             }
 
             if (!isOnline) {
-                ['dashUptime', 'dashCpu', 'dashRam', 'dashDisk'].forEach(id => {
+                // Clear uptime stats
+                ['dashCurrentUptime', 'dashTotalUptime', 'dashDowntime', 'dashCpu', 'dashRam', 'dashDisk'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.textContent = '—';
                 });
+
+                // Update last updated to show offline
+                const topLastUpdatedEl = document.getElementById('topLastUpdated');
+                if (topLastUpdatedEl) {
+                    topLastUpdatedEl.textContent = 'Server offline';
+                }
             }
         }
     </script>
