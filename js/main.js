@@ -307,6 +307,16 @@ function setServerOnlineStatus(isOnline) {
     }
   }
 
+  // Update footer status
+  const footerStatus = document.getElementById('footerStatus');
+  const footerStatusText = footerStatus?.querySelector('.footer-status-text');
+  if (footerStatus) {
+    footerStatus.classList.toggle('offline', !isOnline);
+  }
+  if (footerStatusText) {
+    footerStatusText.textContent = isOnline ? 'All systems normal.' : 'Systems offline.';
+  }
+
   // Set placeholder values when offline
   if (!isOnline) {
     ['statUptime', 'statCpu', 'statRam', 'statDisk'].forEach(id => {

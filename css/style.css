@@ -1403,6 +1403,38 @@ h4 {
   color: var(--accent-primary);
 }
 
+/* Footer Status */
+.footer-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  cursor: pointer;
+}
+
+.footer-status:hover {
+  color: var(--text-primary);
+}
+
+.footer-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b82f6;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.footer-status.offline .footer-status-dot {
+  background: #ff5f57;
+}
+
+.footer-status.offline .footer-status-text {
+  color: #ff5f57;
+}
+
 /* ====== ANIMATIONS ====== */
 .reveal {
   opacity: 0;
