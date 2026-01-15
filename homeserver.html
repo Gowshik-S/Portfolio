@@ -803,6 +803,7 @@
     <script>
         // ====== CONFIGURATION ======
         const SERVER_STATS_API = 'https://stats.gowshik.online/api/homeserver';
+        const DOWNTIME_TRACKER_API = 'https://portfolio-blry.onrender.com/api/downtime/status';
         const REFRESH_INTERVAL = 1000; // 1 second
         const CHART_HISTORY_LENGTH = 60; // 60 data points
 
@@ -816,10 +817,6 @@
 
         let cpuChart, ramChart, diskChart, overviewChart;
 
-        // ====== DOWNTIME TRACKING ======
-        let downtimeStartTime = null;
-        let downtimeInterval = null;
-
         // ====== INITIALIZATION ======
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
@@ -827,6 +824,7 @@
             initYear();
             initCharts();
             initDashboardStats();
+            initDowntimeFetching();
         });
 
         // ====== THEME ======
@@ -1211,51 +1209,52 @@
             }
 
             if (!isOnline) {
-                // Start downtime counter if not already started
-                if (!downtimeStartTime) {
-                    downtimeStartTime = Date.now();
-                    startDowntimeCounter();
-                }
-
-                // Clear uptime stats
+                // Clear uptime stats when offline
                 ['dashCurrentUptime', 'dashTotalUptime', 'dashCpu', 'dashRam', 'dashDisk'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.textContent = '—';
                 });
+            }
+        }
+
+        // ====== DOWNTIME FETCHING FROM API ======
+        function initDowntimeFetching() {
+            // Fetch immediately
+            fetchDowntimeFromAPI();
+            // Then fetch every second
+            setInterval(fetchDowntimeFromAPI, 1000);
+        }
+
+        async function fetchDowntimeFromAPI() {
+            try {
+                const response = await fetch(DOWNTIME_TRACKER_API, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    signal: AbortSignal.timeout(5000)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                updateDowntimeUI(data);
+            } catch (error) {
+                console.warn('Failed to fetch downtime from tracker:', error.message);
+                // If tracker is unavailable, show dash
+                const downtimeEl = document.getElementById('dashDowntime');
+                if (downtimeEl) downtimeEl.textContent = '—';
+            }
+        }
+
+        function updateDowntimeUI(data) {
+            const downtimeEl = document.getElementById('dashDowntime');
+            if (!downtimeEl) return;
+
+            if (data.is_offline && data.current_downtime_seconds) {
+                // Server is offline, show current downtime
+                downtimeEl.textContent = formatDowntime(Math.floor(data.current_downtime_seconds));
             } else {
-                // Stop downtime counter when server comes back online
-                if (downtimeStartTime) {
-                    downtimeStartTime = null;
-                    stopDowntimeCounter();
-                    // Clear downtime display
-                    const downtimeEl = document.getElementById('dashDowntime');
-                    if (downtimeEl) downtimeEl.textContent = '—';
-                }
-            }
-        }
-
-        function startDowntimeCounter() {
-            // Clear any existing interval
-            if (downtimeInterval) {
-                clearInterval(downtimeInterval);
-            }
-
-            // Update downtime every second
-            downtimeInterval = setInterval(() => {
-                if (downtimeStartTime) {
-                    const elapsedSeconds = Math.floor((Date.now() - downtimeStartTime) / 1000);
-                    const downtimeEl = document.getElementById('dashDowntime');
-                    if (downtimeEl) {
-                        downtimeEl.textContent = formatDowntime(elapsedSeconds);
-                    }
-                }
-            }, 1000);
-        }
-
-        function stopDowntimeCounter() {
-            if (downtimeInterval) {
-                clearInterval(downtimeInterval);
-                downtimeInterval = null;
+                // Server is online, show dash
+                downtimeEl.textContent = '—';
             }
         }
 

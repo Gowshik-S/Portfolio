@@ -32,3 +32,4 @@ venv/
 # IDE settings
 .idea/
 .vscode/
+*.md

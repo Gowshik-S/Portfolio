@@ -1,10 +1,12 @@
 from flask import Flask, jsonify
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from datetime import datetime, timezone
 import os
 
 app = Flask(__name__)
-CORS(app)
+
+# Don't enable CORS globally - we'll add it selectively
+# CORS(app)  # REMOVED
 
 # In-memory storage (for simple deployment)
 # For production, consider using Redis or a database
@@ -16,6 +18,7 @@ downtime_tracker = {
 
 
 @app.route('/api/downtime/status', methods=['GET'])
+@cross_origin()  # Allow CORS only for this GET endpoint
 def get_downtime_status():
     """
     Get current downtime status.
@@ -42,6 +45,7 @@ def get_downtime_status():
             'offline_since': None,
             'timestamp': datetime.now(timezone.utc).isoformat()
         })
+
 
 
 @app.route('/api/downtime/trigger-offline', methods=['POST'])
@@ -117,6 +121,7 @@ def reset_downtime():
 
 
 @app.route('/health', methods=['GET'])
+@cross_origin()  # Allow CORS for health check
 def health_check():
     """Health check endpoint for Render"""
     return jsonify({
@@ -124,6 +129,7 @@ def health_check():
         'service': 'downtime-tracker',
         'timestamp': datetime.now(timezone.utc).isoformat()
     })
+
 
 
 if __name__ == '__main__':
