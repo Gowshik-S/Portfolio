@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Home Server Dashboard | Gowshik S</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Live server dashboard showing real-time system metrics, resource usage graphs, and services health status." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://gowshik.online/homeserver" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/g-favicon.png">
+    <link rel="apple-touch-icon" href="assets/g-favicon.png">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        /* Dashboard-specific styles */
+        .dashboard-hero {
+            padding: calc(var(--nav-height) + 40px) 0 40px;
+            text-align: center;
+        }
+
+        .dashboard-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 16px;
+        }
+
+        .dashboard-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: color var(--transition-fast);
+            margin-bottom: 24px;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .back-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-accent);
+            transform: translateY(-4px);
+        }
+
+        .stat-card.primary {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        .stat-card.primary::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: calc(var(--radius-lg) + 2px);
+            background: var(--accent-gradient);
+            z-index: -1;
+        }
+
+        .stat-card-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+            margin: 0 auto 16px;
+        }
+
+        .stat-card.primary .stat-card-icon {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .stat-card-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .stat-card-value {
+            font-family: 'CerebriSans', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-card-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            margin-bottom: 48px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+        }
+
+        .chart-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .chart-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .chart-card-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(0, 210, 106, 0.15);
+            border-radius: var(--radius-full);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #00d26a;
+        }
+
+        .chart-card-badge .live-dot {
+            width: 6px;
+            height: 6px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+
+        /* Services Health */
+        .services-section {
+            margin-bottom: 48px;
+        }
+
+        .section-title-small {
+            font-size: 1.25rem;
+            margin-bottom: 24px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all var(--transition-fast);
+        }
+
+        .service-card:hover {
+            border-color: var(--border-accent);
+        }
+
+        .service-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .service-status.online {
+            background: #00d26a;
+            box-shadow: 0 0 8px rgba(0, 210, 106, 0.5);
+        }
+
+        .service-status.offline {
+            background: #ff5f57;
+            box-shadow: 0 0 8px rgba(255, 95, 87, 0.5);
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .service-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* System Info */
+        .system-info-section {
+            margin-bottom: 48px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+        }
+
+        .info-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card-title svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-primary);
+        }
+
+        /* Connection Status Banner */
+        .connection-banner {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+            transition: all var(--transition-fast);
+        }
+
+        .connection-banner.online {
+            border-color: rgba(0, 210, 106, 0.3);
+        }
+
+        .connection-banner.offline {
+            border-color: rgba(255, 95, 87, 0.3);
+        }
+
+        .connection-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .connection-banner.online .connection-dot {
+            background: #00d26a;
+        }
+
+        .connection-banner.offline .connection-dot {
+            background: #ff5f57;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient-bg"></div>
+
+    <!-- ====== NAVIGATION ====== -->
+    <header class="navbar scrolled">
+        <div class="container">
+            <!-- Nav Links -->
+            <nav class="nav-links" id="navLinks">
+                <a href="/">Home</a>
+                <a href="/#projects">Projects</a>
+                <a href="/#server" class="active">Server</a>
+                <a href="/#skills">Skills</a>
+                <a href="/#contact">Contact</a>
+            </nav>
+
+            <!-- Nav Actions -->
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+
+                <button class="nav-menu-btn" id="navMenuBtn" aria-label="Toggle menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ====== DASHBOARD HERO ====== -->
+        <section class="dashboard-hero">
+            <div class="container">
+                <a href="/" class="back-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to Portfolio
+                </a>
+                <h1 class="dashboard-title">Home Server <span class="gradient-text">Dashboard</span></h1>
+                <p class="dashboard-subtitle">
+                    Real-time monitoring of my self-hosted Ubuntu server. All metrics are sanitized for privacy.
+                </p>
+            </div>
+        </section>
+
+        <!-- ====== STATS OVERVIEW ====== -->
+        <section class="section" style="padding-top: 0;">
+            <div class="container">
+                <div class="stats-overview">
+                    <!-- Uptime -->
+                    <div class="stat-card primary">
+                        <div class="stat-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-card-value" id="dashUptime">—</div>
+                        <div class="stat-card-label">Uptime</div>
+                    </div>
+
+                    <!-- CPU -->
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                                <rect x="9" y="9" width="6" height="6"></rect>
+                                <line x1="9" y1="1" x2="9" y2="4"></line>
+                                <line x1="15" y1="1" x2="15" y2="4"></line>
+                                <line x1="9" y1="20" x2="9" y2="23"></line>
+                                <line x1="15" y1="20" x2="15" y2="23"></line>
+                                <line x1="20" y1="9" x2="23" y2="9"></line>
+                                <line x1="20" y1="14" x2="23" y2="14"></line>
+                                <line x1="1" y1="9" x2="4" y2="9"></line>
+                                <line x1="1" y1="14" x2="4" y2="14"></line>
+                            </svg>
+                        </div>
+                        <div class="stat-card-value" id="dashCpu">—</div>
+                        <div class="stat-card-label">CPU Usage</div>
+                    </div>
+
+                    <!-- RAM -->
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                                <line x1="6" y1="10" x2="6" y2="14"></line>
+                                <line x1="10" y1="10" x2="10" y2="14"></line>
+                                <line x1="14" y1="10" x2="14" y2="14"></line>
+                                <line x1="18" y1="10" x2="18" y2="14"></line>
+                            </svg>
+                        </div>
+                        <div class="stat-card-value" id="dashRam">—</div>
+                        <div class="stat-card-label">RAM Usage</div>
+                    </div>
+
+                    <!-- Disk -->
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-card-value" id="dashDisk">—</div>
+                        <div class="stat-card-label">Disk Usage</div>
+                    </div>
+                </div>
+
+                <!-- ====== CHARTS ====== -->
+                <div class="charts-section">
+                    <div class="charts-grid">
+                        <!-- CPU Chart -->
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h3 class="chart-card-title">CPU Usage Over Time</h3>
+                                <span class="chart-card-badge">
+                                    <span class="live-dot"></span>
+                                    LIVE
+                                </span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="cpuChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- RAM Chart -->
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h3 class="chart-card-title">Memory Usage Over Time</h3>
+                                <span class="chart-card-badge">
+                                    <span class="live-dot"></span>
+                                    LIVE
+                                </span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="ramChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Disk Chart -->
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h3 class="chart-card-title">Disk Usage</h3>
+                                <span class="chart-card-badge">
+                                    <span class="live-dot"></span>
+                                    LIVE
+                                </span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="diskChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Network Chart -->
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h3 class="chart-card-title">System Overview</h3>
+                                <span class="chart-card-badge">
+                                    <span class="live-dot"></span>
+                                    LIVE
+                                </span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="overviewChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== SERVICES HEALTH ====== -->
+                <div class="services-section">
+                    <h2 class="section-title-small">Services Health</h2>
+                    <div class="services-grid" id="servicesGrid">
+                        <!-- Services will be populated by JS -->
+                        <div class="service-card">
+                            <div class="service-status online"></div>
+                            <div class="service-info">
+                                <div class="service-name">Nginx</div>
+                                <div class="service-desc">Web Server</div>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-status online"></div>
+                            <div class="service-info">
+                                <div class="service-name">Docker</div>
+                                <div class="service-desc">Container Runtime</div>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-status online"></div>
+                            <div class="service-info">
+                                <div class="service-name">Cloudflared</div>
+                                <div class="service-desc">Tunnel Service</div>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-status online"></div>
+                            <div class="service-info">
+                                <div class="service-name">Tailscale</div>
+                                <div class="service-desc">VPN Mesh</div>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-status online"></div>
+                            <div class="service-info">
+                                <div class="service-name">SSH</div>
+                                <div class="service-desc">Remote Access</div>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-status online"></div>
+                            <div class="service-info">
+                                <div class="service-name">Stats API</div>
+                                <div class="service-desc">Metrics Server</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== SYSTEM INFO ====== -->
+                <div class="system-info-section">
+                    <h2 class="section-title-small">System Information</h2>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h3 class="info-card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                                </svg>
+                                Hardware
+                            </h3>
+                            <ul class="server-info-list">
+                                <li><span class="info-label">Processor:</span> <span class="info-value">AMD
+                                        A10-7800</span></li>
+                                <li><span class="info-label">RAM:</span> <span class="info-value">8GB DDR3</span></li>
+                                <li><span class="info-label">Storage:</span> <span class="info-value">SATA HDD</span>
+                                </li>
+                                <li><span class="info-label">Mode:</span> <span class="info-value">Headless</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h3 class="info-card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <circle cx="12" cy="12" r="4"></circle>
+                                    <line x1="21.17" y1="8" x2="12" y2="8"></line>
+                                    <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
+                                    <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
+                                </svg>
+                                Software
+                            </h3>
+                            <ul class="server-info-list">
+                                <li><span class="info-label">OS:</span> <span class="info-value">Ubuntu 22.04.5
+                                        LTS</span></li>
+                                <li><span class="info-label">Kernel:</span> <span class="info-value"
+                                        id="kernelVersion">Linux</span></li>
+                                <li><span class="info-label">Python:</span> <span class="info-value">3.10+</span></li>
+                                <li><span class="info-label">Docker:</span> <span class="info-value">24.0+</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Connection Status Banner -->
+    <div class="connection-banner online" id="connectionBanner">
+        <span class="connection-dot"></span>
+        <span id="connectionStatus">Connected</span>
+        <span style="color: var(--text-muted);">•</span>
+        <span id="lastUpdate">—</span>
+    </div>
+
+    <!-- ====== FOOTER ====== -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">© <span id="year"></span> Gowshik S. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="https://github.com/Gowshik-S" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://www.linkedin.com/in/gowshiks/" target="_blank" rel="noopener">LinkedIn</a>
+                <a href="/assets/resume.pdf" target="_blank" rel="noopener">Resume</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // ====== CONFIGURATION ======
+        const SERVER_STATS_API = 'https://stats.gowshik.online/api/homeserver';
+        const REFRESH_INTERVAL = 1000; // 1 second
+        const CHART_HISTORY_LENGTH = 60; // 60 data points
+
+        // ====== CHART DATA ======
+        const chartData = {
+            labels: [],
+            cpu: [],
+            ram: [],
+            disk: []
+        };
+
+        let cpuChart, ramChart, diskChart, overviewChart;
+
+        // ====== INITIALIZATION ======
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initMobileNav();
+            initYear();
+            initCharts();
+            initDashboardStats();
+        });
+
+        // ====== THEME ======
+        function initTheme() {
+            const themeToggle = document.getElementById('themeToggle');
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+
+            themeToggle?.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateChartColors();
+            });
+        }
+
+        // ====== MOBILE NAV ======
+        function initMobileNav() {
+            const menuBtn = document.getElementById('navMenuBtn');
+            const navLinks = document.getElementById('navLinks');
+
+            menuBtn?.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
+
+        // ====== YEAR ======
+        function initYear() {
+            const yearEl = document.getElementById('year');
+            if (yearEl) {
+                yearEl.textContent = new Date().getFullYear();
+            }
+        }
+
+        // ====== CHARTS ======
+        function initCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 300
+                },
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            callback: value => value + '%'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            };
+
+            // CPU Chart
+            cpuChart = new Chart(document.getElementById('cpuChart'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        data: chartData.cpu,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // RAM Chart
+            ramChart = new Chart(document.getElementById('ramChart'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        data: chartData.ram,
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // Disk Chart (Doughnut)
+            diskChart = new Chart(document.getElementById('diskChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Used', 'Free'],
+                    datasets: [{
+                        data: [0, 100],
+                        backgroundColor: ['#8b5cf6', 'rgba(255, 255, 255, 0.1)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Overview Chart (Bar)
+            overviewChart = new Chart(document.getElementById('overviewChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['CPU', 'RAM', 'Disk'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#8b5cf6', '#06b6d4', '#f59e0b'],
+                        borderRadius: 8,
+                        barThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.5)',
+                                callback: value => value + '%'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            updateChartColors();
+        }
+
+        function updateChartColors() {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const gridColor = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)';
+            const tickColor = isLight ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.5)';
+
+            [cpuChart, ramChart].forEach(chart => {
+                if (chart) {
+                    chart.options.scales.y.grid.color = gridColor;
+                    chart.options.scales.y.ticks.color = tickColor;
+                    chart.update('none');
+                }
+            });
+
+            if (overviewChart) {
+                overviewChart.options.scales.x.ticks.color = tickColor;
+                overviewChart.options.scales.y.grid.color = gridColor;
+                overviewChart.options.scales.y.ticks.color = tickColor;
+                overviewChart.update('none');
+            }
+
+            if (diskChart) {
+                diskChart.options.plugins.legend.labels.color = tickColor;
+                diskChart.update('none');
+            }
+        }
+
+        // ====== DASHBOARD STATS ======
+        function initDashboardStats() {
+            fetchDashboardStats();
+            setInterval(fetchDashboardStats, REFRESH_INTERVAL);
+        }
+
+        async function fetchDashboardStats() {
+            try {
+                const response = await fetch(SERVER_STATS_API, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    signal: AbortSignal.timeout(5000)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                updateDashboardUI(data);
+                updateCharts(data);
+                setConnectionStatus(true);
+            } catch (error) {
+                console.warn('Failed to fetch stats:', error.message);
+                setConnectionStatus(false);
+            }
+        }
+
+        function updateDashboardUI(data) {
+            // Update stat cards
+            const uptimeEl = document.getElementById('dashUptime');
+            if (uptimeEl && data.uptime !== undefined) {
+                uptimeEl.textContent = formatUptime(data.uptime);
+            }
+
+            const cpuEl = document.getElementById('dashCpu');
+            if (cpuEl && data.cpu_percent !== undefined) {
+                cpuEl.textContent = `${data.cpu_percent.toFixed(1)}%`;
+            }
+
+            const ramEl = document.getElementById('dashRam');
+            if (ramEl && data.ram_percent !== undefined) {
+                ramEl.textContent = `${data.ram_percent.toFixed(1)}%`;
+            }
+
+            const diskEl = document.getElementById('dashDisk');
+            if (diskEl && data.disk_percent !== undefined) {
+                diskEl.textContent = `${data.disk_percent.toFixed(1)}%`;
+            }
+
+            // Update last update time
+            const lastUpdateEl = document.getElementById('lastUpdate');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = new Date().toLocaleTimeString();
+            }
+        }
+
+        function updateCharts(data) {
+            const now = new Date().toLocaleTimeString();
+
+            // Add new data point
+            chartData.labels.push(now);
+            chartData.cpu.push(data.cpu_percent || 0);
+            chartData.ram.push(data.ram_percent || 0);
+
+            // Keep only last N data points
+            if (chartData.labels.length > CHART_HISTORY_LENGTH) {
+                chartData.labels.shift();
+                chartData.cpu.shift();
+                chartData.ram.shift();
+            }
+
+            // Update line charts
+            cpuChart.update('none');
+            ramChart.update('none');
+
+            // Update disk chart
+            const diskUsed = data.disk_percent || 0;
+            diskChart.data.datasets[0].data = [diskUsed, 100 - diskUsed];
+            diskChart.update('none');
+
+            // Update overview chart
+            overviewChart.data.datasets[0].data = [
+                data.cpu_percent || 0,
+                data.ram_percent || 0,
+                data.disk_percent || 0
+            ];
+            overviewChart.update('none');
+        }
+
+        function formatUptime(seconds) {
+            if (typeof seconds !== 'number' || seconds < 0) return '—';
+
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+
+            if (days > 0) {
+                return `${days}d ${hours}h ${minutes}m`;
+            } else if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            } else {
+                return `${minutes}m`;
+            }
+        }
+
+        function setConnectionStatus(isOnline) {
+            const banner = document.getElementById('connectionBanner');
+            const statusText = document.getElementById('connectionStatus');
+
+            if (banner) {
+                banner.classList.toggle('online', isOnline);
+                banner.classList.toggle('offline', !isOnline);
+            }
+
+            if (statusText) {
+                statusText.textContent = isOnline ? 'Connected' : 'Disconnected';
+            }
+
+            // Update service status for Stats API
+            const servicesGrid = document.getElementById('servicesGrid');
+            const statsApiCard = servicesGrid?.querySelector('.service-card:last-child .service-status');
+            if (statsApiCard) {
+                statsApiCard.classList.toggle('online', isOnline);
+                statsApiCard.classList.toggle('offline', !isOnline);
+            }
+
+            if (!isOnline) {
+                ['dashUptime', 'dashCpu', 'dashRam', 'dashDisk'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = '—';
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
