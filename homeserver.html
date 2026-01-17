@@ -482,6 +482,153 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Login Button */
+        .login-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-full);
+            color: var(--text-secondary);
+            font-family: 'CerebriSans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .login-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+            background: var(--bg-elevated);
+            transform: translateY(-2px);
+        }
+
+        .login-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Coming Soon Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 48px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .modal-close svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            background: #0c0c0c;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .modal-icon svg {
+            width: 40px;
+            height: 40px;
+            color: var(--text-primary);
+        }
+
+        .modal-title {
+            font-family: 'CerebriSans', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .modal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .modal-badge svg {
+            width: 16px;
+            height: 16px;
+        }
     </style>
 </head>
 
@@ -503,6 +650,15 @@
 
             <!-- Nav Actions -->
             <div class="nav-actions">
+                <button class="login-btn" id="loginBtn" aria-label="Login">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                    </svg>
+                    Login
+                </button>
+
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                     <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -815,6 +971,36 @@
         </div>
     </footer>
 
+    <!-- Coming Soon Modal -->
+    <div class="modal-overlay" id="comingSoonModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose" aria-label="Close modal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <h2 class="modal-title">Coming Soon</h2>
+            <p class="modal-text">
+                Server login functionality is currently under development. Stay tuned for secure access to advanced
+                monitoring features!
+            </p>
+            <div class="modal-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+                In Development
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script>
         // ====== CONFIGURATION ======
@@ -845,6 +1031,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             initMobileNav();
+            initLoginModal();
             initYear();
             initCharts();
             initDashboardStats();
@@ -854,9 +1041,14 @@
         // ====== THEME ======
         function initTheme() {
             const themeToggle = document.getElementById('themeToggle');
+
+            // Check for saved theme preference, default to dark if none exists
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme) {
                 document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                // Default to dark theme
+                document.documentElement.setAttribute('data-theme', 'dark');
             }
 
             themeToggle?.addEventListener('click', () => {
@@ -865,6 +1057,41 @@
                 document.documentElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateChartColors();
+            });
+        }
+
+        // ====== LOGIN MODAL ======
+        function initLoginModal() {
+            const loginBtn = document.getElementById('loginBtn');
+            const modal = document.getElementById('comingSoonModal');
+            const modalClose = document.getElementById('modalClose');
+
+            // Open modal when login button is clicked
+            loginBtn?.addEventListener('click', () => {
+                modal?.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+
+            // Close modal when close button is clicked
+            modalClose?.addEventListener('click', () => {
+                modal?.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            // Close modal when clicking outside the modal content
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Close modal on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal?.classList.contains('active')) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
             });
         }
 

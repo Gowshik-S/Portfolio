@@ -18,14 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====== THEME TOGGLE ======
 function initThemeToggle() {
   const themeToggle = document.getElementById('themeToggle');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
-  // Check for saved theme or use system preference
+  // Check for saved theme preference, default to dark if none exists
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme) {
     document.documentElement.setAttribute('data-theme', savedTheme);
-  } else if (!prefersDark.matches) {
-    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    // Default to dark theme
+    document.documentElement.setAttribute('data-theme', 'dark');
   }
 
   themeToggle?.addEventListener('click', () => {
